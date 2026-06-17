@@ -1,0 +1,154 @@
+// ─────────────────────────────────────────────────────────────────────────
+// ng-hub-ui-milestones — timeline / progress-steps
+// ─────────────────────────────────────────────────────────────────────────
+// Themeable via canonical `--hub-*` tokens with safe fallbacks, so it works
+// standalone and re-themes at runtime.
+// ─────────────────────────────────────────────────────────────────────────
+
+:root {
+	--hub-milestone-node-size: 2.75rem;
+	--hub-milestone-node-font-size: 1.05rem;
+	--hub-milestone-node-color: var(--hub-sys-color-primary, #7c3aed);
+	--hub-milestone-node-text: #ffffff;
+	--hub-milestone-pending-bg: var(--hub-sys-surface-elevated, #f1f3f5);
+	--hub-milestone-pending-color: var(--hub-sys-text-muted, #6c757d);
+	--hub-milestone-pending-border: var(--hub-sys-border-color-default, #dee2e6);
+	--hub-milestone-error-bg: var(--hub-sys-color-danger, #dc3545);
+	--hub-milestone-connector-thickness: 3px;
+	--hub-milestone-connector-bg: linear-gradient(180deg, #7c3aed, #f97316);
+	--hub-milestone-connector-pending-bg: var(--hub-sys-border-color-default, #dee2e6);
+	--hub-milestone-gap: 1rem;
+	--hub-milestone-spacing: 1.75rem;
+	--hub-milestone-body-color: var(--hub-sys-text-primary, #212529);
+	--hub-milestone-body-muted: var(--hub-sys-text-muted, #6c757d);
+}
+
+.hub-milestones {
+	display: flex;
+}
+
+.hub-milestones--vertical {
+	flex-direction: column;
+}
+
+.hub-milestones--horizontal {
+	flex-direction: row;
+	align-items: flex-start;
+}
+
+.hub-milestone {
+	display: flex;
+	position: relative;
+}
+
+.hub-milestone__node {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--hub-milestone-node-size);
+	height: var(--hub-milestone-node-size);
+	border-radius: 50%;
+	font-weight: 700;
+	font-size: var(--hub-milestone-node-font-size);
+	line-height: 1;
+	background: var(--hub-milestone-node-color);
+	color: var(--hub-milestone-node-text);
+	z-index: 1;
+}
+
+.hub-milestone__rail {
+	display: flex;
+	align-items: center;
+	flex: 0 0 auto;
+}
+
+.hub-milestone__connector {
+	background: var(--hub-milestone-connector-bg);
+	flex: 1 1 auto;
+}
+
+.hub-milestone__body {
+	color: var(--hub-milestone-body-color);
+	min-width: 0;
+}
+
+// ── State colors ─────────────────────────────────────────────────────────
+.hub-milestone--pending .hub-milestone__node {
+	background: var(--hub-milestone-pending-bg);
+	color: var(--hub-milestone-pending-color);
+	border: 1px solid var(--hub-milestone-pending-border);
+}
+
+.hub-milestone--error .hub-milestone__node {
+	background: var(--hub-milestone-error-bg);
+	color: #ffffff;
+}
+
+.hub-milestone--active .hub-milestone__node {
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--hub-milestone-node-color) 22%, transparent);
+}
+
+.hub-milestone--pending .hub-milestone__connector {
+	background: var(--hub-milestone-connector-pending-bg);
+}
+
+// ── Vertical layout ──────────────────────────────────────────────────────
+.hub-milestones--vertical .hub-milestone {
+	flex-direction: row;
+	gap: var(--hub-milestone-gap);
+	padding-bottom: var(--hub-milestone-spacing);
+}
+
+.hub-milestones--vertical .hub-milestone:last-child {
+	padding-bottom: 0;
+}
+
+.hub-milestones--vertical .hub-milestone__rail {
+	flex-direction: column;
+	align-self: stretch;
+}
+
+.hub-milestones--vertical .hub-milestone__connector {
+	width: var(--hub-milestone-connector-thickness);
+	margin-top: 0.35rem;
+	border-radius: 999px;
+}
+
+.hub-milestones--vertical .hub-milestone:last-child .hub-milestone__connector {
+	display: none;
+}
+
+.hub-milestones--vertical .hub-milestone__body {
+	padding-top: calc((var(--hub-milestone-node-size) - 1.4rem) / 2);
+	padding-bottom: 0.25rem;
+}
+
+// ── Horizontal layout ────────────────────────────────────────────────────
+.hub-milestones--horizontal .hub-milestone {
+	flex: 1 1 0;
+	flex-direction: column;
+	gap: var(--hub-milestone-gap);
+	padding-right: var(--hub-milestone-spacing);
+	min-width: 0;
+}
+
+.hub-milestones--horizontal .hub-milestone:last-child {
+	padding-right: 0;
+	flex: 0 0 auto;
+}
+
+.hub-milestones--horizontal .hub-milestone__rail {
+	flex-direction: row;
+	width: 100%;
+}
+
+.hub-milestones--horizontal .hub-milestone__connector {
+	height: var(--hub-milestone-connector-thickness);
+	margin-left: 0.35rem;
+	border-radius: 999px;
+}
+
+.hub-milestones--horizontal .hub-milestone:last-child .hub-milestone__connector {
+	display: none;
+}

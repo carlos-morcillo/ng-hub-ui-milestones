@@ -1,0 +1,257 @@
+# ng-hub-ui-milestones
+
+**Español** | [English](./README.md)
+
+[![npm version](https://img.shields.io/npm/v/ng-hub-ui-milestones.svg)](https://www.npmjs.com/package/ng-hub-ui-milestones)
+[![license](https://img.shields.io/npm/l/ng-hub-ui-milestones.svg)](https://github.com/carlos-morcillo/ng-hub-ui-milestones/blob/main/LICENSE)
+
+Un componente de línea de tiempo / pasos de progreso ligero y presentacional para Angular: distribuye nodos de hitos en vertical u horizontal, proyecta cualquier contenido dentro de cada nodo y personaliza todo mediante variables CSS.
+
+## Documentación y ejemplos en vivo
+
+Este paquete forma parte de [Hub UI](https://hubui.dev/), una colección de librerías de componentes Angular para aplicaciones standalone.
+
+- Documentación: https://hubui.dev/milestones/overview/
+- Ejemplos en vivo: https://hubui.dev/milestones/examples/
+- Hub UI: https://hubui.dev/
+
+## 🧩 Familia de librerías `ng-hub-ui`
+
+Esta librería forma parte del ecosistema **Hub UI**:
+
+- [**ng-hub-ui-accordion**](https://www.npmjs.com/package/ng-hub-ui-accordion) (obsoleta — usa ng-hub-ui-panels)
+- [**ng-hub-ui-action-sheet**](https://www.npmjs.com/package/ng-hub-ui-action-sheet)
+- [**ng-hub-ui-avatar**](https://www.npmjs.com/package/ng-hub-ui-avatar)
+- [**ng-hub-ui-board**](https://www.npmjs.com/package/ng-hub-ui-board)
+- [**ng-hub-ui-breadcrumbs**](https://www.npmjs.com/package/ng-hub-ui-breadcrumbs)
+- [**ng-hub-ui-calendar**](https://www.npmjs.com/package/ng-hub-ui-calendar)
+- [**ng-hub-ui-dropdown**](https://www.npmjs.com/package/ng-hub-ui-dropdown)
+- [**ng-hub-ui-ds**](https://www.npmjs.com/package/ng-hub-ui-ds)
+- [**ng-hub-ui-forms**](https://www.npmjs.com/package/ng-hub-ui-forms)
+- [**ng-hub-ui-history**](https://www.npmjs.com/package/ng-hub-ui-history)
+- [**ng-hub-ui-milestones**](https://www.npmjs.com/package/ng-hub-ui-milestones) ← Estás aquí
+- [**ng-hub-ui-modal**](https://www.npmjs.com/package/ng-hub-ui-modal)
+- [**ng-hub-ui-nav**](https://www.npmjs.com/package/ng-hub-ui-nav)
+- [**ng-hub-ui-paginable**](https://www.npmjs.com/package/ng-hub-ui-paginable)
+- [**ng-hub-ui-panels**](https://www.npmjs.com/package/ng-hub-ui-panels)
+- [**ng-hub-ui-portal**](https://www.npmjs.com/package/ng-hub-ui-portal)
+- [**ng-hub-ui-skeleton**](https://www.npmjs.com/package/ng-hub-ui-skeleton)
+- [**ng-hub-ui-sortable**](https://www.npmjs.com/package/ng-hub-ui-sortable)
+- [**ng-hub-ui-stepper**](https://www.npmjs.com/package/ng-hub-ui-stepper)
+- [**ng-hub-ui-utils**](https://www.npmjs.com/package/ng-hub-ui-utils)
+
+## 📑 Tabla de contenidos
+
+- [Descripción](#-descripción)
+- [Características](#-características)
+- [Instalación](#-instalación)
+- [Uso](#-uso)
+- [Referencia de API](#-referencia-de-api)
+- [Estilos](#-estilos)
+- [Changelog](#-changelog)
+- [Contribuir](#-contribuir)
+- [Soporte](#-soporte)
+- [Licencia](#-licencia)
+
+## 📖 Descripción
+
+`ng-hub-ui-milestones` renderiza una línea de tiempo (también conocida como pasos de progreso) formada por nodos de hitos conectados por un raíl. Es puramente presentacional y no impone una forma de tus datos: compones la línea de tiempo de manera declarativa con dos componentes y una directiva.
+
+- `hub-milestones` es el contenedor. Distribuye sus nodos hijos en vertical u horizontal, dibuja el raíl de conexión y numera los nodos automáticamente según el orden del DOM.
+- `hub-milestone` es un nodo individual. Expone un `state` visual (`complete` · `active` · `pending` · `error`), una sustitución opcional de `color` por nodo y un `label` de respaldo. Cualquier marcado colocado dentro se proyecta como el cuerpo del nodo (título, descripción, fechas, etc.).
+- `hubMilestoneNode` es una directiva estructural que permite proyectar contenido personalizado **dentro** del círculo del nodo — un número, un icono, un avatar o cualquier marcado. Si se omite, el nodo muestra el `label` o el índice automático en base 1.
+
+Los componentes son standalone, basados en signals, usan detección de cambios `OnPush` y son compatibles con SSR.
+
+## ✨ Características
+
+- **Dos orientaciones**: disposición `vertical` y `horizontal` desde un único input.
+- **Numeración automática**: los nodos se numeran (1, 2, 3 …) según el orden del DOM, sin gestión manual.
+- **Estados visuales**: los estados `complete`, `active`, `pending` y `error` controlan los colores del nodo y del conector.
+- **Contenido de nodo personalizado**: proyecta números, iconos o avatares dentro del círculo mediante `hubMilestoneNode`.
+- **Sustitución de color por nodo**: aplica cualquier color CSS a un nodo individual con el input `color`.
+- **Personalización completa con variables CSS**: ajusta colores, tamaños, espaciado y el degradado del conector mediante los tokens `--hub-milestone-*`.
+- **Standalone y moderno**: componentes standalone, Angular Signals, `OnPush`, compatible con SSR.
+- **Sin dependencias en tiempo de ejecución** más allá de Angular y `tslib`.
+
+## 📦 Instalación
+
+```bash
+npm install ng-hub-ui-milestones
+```
+
+## 🚀 Uso
+
+Importa los componentes standalone (y la directiva cuando proyectes contenido de nodo personalizado) en tu componente:
+
+```typescript
+import { Component } from '@angular/core';
+import { HubMilestonesComponent, HubMilestoneComponent, HubMilestoneNodeDirective } from 'ng-hub-ui-milestones';
+
+@Component({
+	selector: 'app-roadmap',
+	standalone: true,
+	imports: [HubMilestonesComponent, HubMilestoneComponent, HubMilestoneNodeDirective],
+	template: `
+		<hub-milestones orientation="vertical">
+			<hub-milestone state="complete">
+				<h4>Inicio del proyecto</h4>
+				<p>Requisitos recopilados y aprobados.</p>
+			</hub-milestone>
+
+			<hub-milestone state="active">
+				<h4>Desarrollo</h4>
+				<p>Construyendo las funcionalidades principales.</p>
+			</hub-milestone>
+
+			<hub-milestone state="pending">
+				<ng-template hubMilestoneNode>★</ng-template>
+				<h4>Lanzamiento</h4>
+				<p>Despliegue a producción.</p>
+			</hub-milestone>
+		</hub-milestones>
+	`
+})
+export class RoadmapComponent {}
+```
+
+### Orientación horizontal
+
+```html
+<hub-milestones orientation="horizontal">
+	<hub-milestone state="complete"><h4>Paso 1</h4></hub-milestone>
+	<hub-milestone state="active"><h4>Paso 2</h4></hub-milestone>
+	<hub-milestone state="pending"><h4>Paso 3</h4></hub-milestone>
+</hub-milestones>
+```
+
+### Etiquetas y color por nodo
+
+```html
+<hub-milestones orientation="vertical">
+	<hub-milestone state="complete" label="A">
+		<h4>Fase A</h4>
+	</hub-milestone>
+
+	<hub-milestone state="active" color="#0d6efd">
+		<h4>Fase B</h4>
+	</hub-milestone>
+
+	<hub-milestone state="error">
+		<h4>Fase C</h4>
+		<p>Algo salió mal aquí.</p>
+	</hub-milestone>
+</hub-milestones>
+```
+
+Cuando un nodo no tiene ni una plantilla `hubMilestoneNode` ni un `label`, recurre a su número automático en base 1.
+
+## 📚 Referencia de API
+
+### `HubMilestonesComponent` — `<hub-milestones>`
+
+#### Inputs
+
+| Input         | Tipo                       | Por defecto  | Descripción                                          |
+| ------------- | -------------------------- | ------------ | ---------------------------------------------------- |
+| `orientation` | `HubMilestonesOrientation` | `'vertical'` | Dirección del diseño: `'vertical'` u `'horizontal'`. |
+
+> El contenedor también numera automáticamente sus nodos `hub-milestone` proyectados según el orden del DOM; no se requiere ningún input para ello.
+
+### `HubMilestoneComponent` — `<hub-milestone>`
+
+#### Inputs
+
+| Input   | Tipo                | Por defecto | Descripción                                                                                          |
+| ------- | ------------------- | ----------- | ---------------------------------------------------------------------------------------------------- |
+| `state` | `HubMilestoneState` | `'pending'` | Estado visual: `'complete'` · `'active'` · `'pending'` · `'error'`. Controla los colores del nodo/conector. |
+| `color` | `string`            | `''`        | Sustitución de color por nodo (cualquier color CSS). Prevalece sobre el color del estado.            |
+| `label` | `string`            | `''`        | Contenido de respaldo mostrado dentro del nodo cuando no se proporciona una plantilla `hubMilestoneNode`. |
+
+> El contenido proyectado (no de plantilla) colocado dentro de `<hub-milestone>` se renderiza como el cuerpo del nodo, junto (vertical) o debajo (horizontal) del círculo del nodo.
+
+### `HubMilestoneNodeDirective` — `[hubMilestoneNode]`
+
+Directiva estructural aplicada a un `<ng-template>` para proyectar contenido personalizado **dentro** del círculo del nodo (un número, icono, avatar o cualquier marcado). No tiene inputs ni outputs.
+
+```html
+<hub-milestone state="complete">
+	<ng-template hubMilestoneNode>✓</ng-template>
+	<h4>Hecho</h4>
+</hub-milestone>
+```
+
+### Tipos exportados
+
+| Tipo                       | Valores                                          |
+| -------------------------- | ------------------------------------------------ |
+| `HubMilestonesOrientation` | `'vertical' \| 'horizontal'`                     |
+| `HubMilestoneState`        | `'complete' \| 'active' \| 'pending' \| 'error'` |
+
+## 🎨 Estilos
+
+La librería se personaliza por completo mediante variables CSS `--hub-milestone-*`, con valores de respaldo seguros para que funcione de forma autónoma y se re-tematice en tiempo de ejecución. Sobreescríbelas en `:root`, en un selector `hub-milestones` o por nodo mediante el input `color`.
+
+| Variable CSS                           | Por defecto                                    | Descripción                                  |
+| -------------------------------------- | ---------------------------------------------- | -------------------------------------------- |
+| `--hub-milestone-node-size`            | `2.75rem`                                      | Diámetro del círculo del nodo.               |
+| `--hub-milestone-node-font-size`       | `1.05rem`                                      | Tamaño de fuente del contenido del nodo.     |
+| `--hub-milestone-node-color`           | `var(--hub-sys-color-primary, #7c3aed)`        | Color de fondo del nodo (por defecto/activo).|
+| `--hub-milestone-node-text`            | `#ffffff`                                      | Color del texto/contenido del nodo.          |
+| `--hub-milestone-pending-bg`           | `var(--hub-sys-surface-elevated, #f1f3f5)`     | Fondo de un nodo pendiente.                  |
+| `--hub-milestone-pending-color`        | `var(--hub-sys-text-muted, #6c757d)`           | Color del texto de un nodo pendiente.        |
+| `--hub-milestone-pending-border`       | `var(--hub-sys-border-color-default, #dee2e6)` | Borde de un nodo pendiente.                  |
+| `--hub-milestone-error-bg`             | `var(--hub-sys-color-danger, #dc3545)`         | Fondo de un nodo de error.                   |
+| `--hub-milestone-connector-thickness`  | `3px`                                          | Grosor del raíl de conexión.                 |
+| `--hub-milestone-connector-bg`         | `linear-gradient(180deg, #7c3aed, #f97316)`    | Fondo del conector (segmentos completados).  |
+| `--hub-milestone-connector-pending-bg` | `var(--hub-sys-border-color-default, #dee2e6)` | Fondo del conector para segmentos pendientes.|
+| `--hub-milestone-gap`                  | `1rem`                                         | Espacio entre el nodo y su cuerpo.           |
+| `--hub-milestone-spacing`              | `1.75rem`                                      | Espaciado entre hitos consecutivos.          |
+| `--hub-milestone-body-color`           | `var(--hub-sys-text-primary, #212529)`         | Color del texto del cuerpo.                  |
+| `--hub-milestone-body-muted`           | `var(--hub-sys-text-muted, #6c757d)`           | Color atenuado del texto del cuerpo.         |
+
+Ejemplo de personalización independiente del framework:
+
+```scss
+hub-milestones {
+	--hub-milestone-node-size: 3rem;
+	--hub-milestone-node-color: #2563eb;
+	--hub-milestone-connector-bg: linear-gradient(180deg, #2563eb, #22c55e);
+	--hub-milestone-spacing: 2rem;
+}
+```
+
+Ejemplo de integración con Bootstrap (opcional):
+
+```scss
+hub-milestones {
+	--hub-milestone-node-color: var(--bs-primary);
+	--hub-milestone-error-bg: var(--bs-danger);
+	--hub-milestone-pending-bg: var(--bs-secondary-bg);
+	--hub-milestone-body-color: var(--bs-body-color);
+}
+```
+
+## 📝 Changelog
+
+Consulta el [CHANGELOG.md](./CHANGELOG.md) completo para ver el historial de versiones.
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas. Por favor, abre un issue para discutir cambios importantes antes de enviar un pull request, y sigue el estilo de código y las convenciones existentes.
+
+- Repositorio: https://github.com/carlos-morcillo/ng-hub-ui-milestones
+- Issues: https://github.com/carlos-morcillo/ng-hub-ui/issues
+
+## 📞 Soporte
+
+- **Issues**: [GitHub Issues](https://github.com/carlos-morcillo/ng-hub-ui/issues)
+- **Autor**: [Carlos Morcillo](https://www.carlosmorcillo.com)
+
+## 📄 Licencia
+
+MIT © [Carlos Morcillo](https://www.carlosmorcillo.com)
+
+---
+
+Hecho con ❤️ por el equipo de Hub UI
