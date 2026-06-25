@@ -5,6 +5,12 @@ All notable changes to `ng-hub-ui-milestones` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [22.0.3] - 2026-06-25
+
+### Changed
+
+- Widened the Angular peer dependency range from `^22.0.0` to `>=21.0.0`, so the library installs on Angular 21 projects as well (aligning it with the rest of the `ng-hub-ui` family). No code changes — every API used is available since Angular ≤21.
+
 ## [22.0.2] - 2026-06-25
 
 ### Added
