@@ -9,8 +9,8 @@
 	--hub-milestone-node-size: 2.75rem;
 	--hub-milestone-node-font-size: 1.05rem;
 	--hub-milestone-node-color: var(--hub-sys-color-primary, #7c3aed);
-	--hub-milestone-node-text: #ffffff;
-	--hub-milestone-pending-bg: var(--hub-sys-surface-elevated, #f1f3f5);
+	--hub-milestone-node-text: var(--hub-ref-color-white, #ffffff);
+	--hub-milestone-pending-bg: var(--hub-sys-surface-elevated, #f8f9fa);
 	--hub-milestone-pending-color: var(--hub-sys-text-muted, #6c757d);
 	--hub-milestone-pending-border: var(--hub-sys-border-color-default, #dee2e6);
 	--hub-milestone-error-bg: var(--hub-sys-color-danger, #dc3545);
@@ -49,7 +49,7 @@
 	width: var(--hub-milestone-node-size);
 	height: var(--hub-milestone-node-size);
 	border-radius: 50%;
-	font-weight: 700;
+	font-weight: var(--hub-ref-font-weight-bold, 700);
 	font-size: var(--hub-milestone-node-font-size);
 	line-height: 1;
 	background: var(--hub-milestone-node-color);
@@ -82,7 +82,7 @@
 
 .hub-milestone--error .hub-milestone__node {
 	background: var(--hub-milestone-error-bg);
-	color: #ffffff;
+	color: var(--hub-ref-color-white, #ffffff);
 }
 
 .hub-milestone--active .hub-milestone__node {
@@ -112,7 +112,7 @@
 .hub-milestones--vertical .hub-milestone__connector {
 	width: var(--hub-milestone-connector-thickness);
 	margin-top: 0.35rem;
-	border-radius: 999px;
+	border-radius: var(--hub-sys-radius-pill, 50rem);
 }
 
 .hub-milestones--vertical .hub-milestone:last-child .hub-milestone__connector {
@@ -146,7 +146,7 @@
 .hub-milestones--horizontal .hub-milestone__connector {
 	height: var(--hub-milestone-connector-thickness);
 	margin-left: 0.35rem;
-	border-radius: 999px;
+	border-radius: var(--hub-sys-radius-pill, 50rem);
 }
 
 .hub-milestones--horizontal .hub-milestone:last-child .hub-milestone__connector {
