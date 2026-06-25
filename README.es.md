@@ -70,7 +70,10 @@ Los componentes son standalone, basados en signals, usan detección de cambios `
 - **Estados visuales**: los estados `complete`, `active`, `pending` y `error` controlan los colores del nodo y del conector.
 - **Contenido de nodo personalizado**: proyecta números, iconos o avatares dentro del círculo mediante `hubMilestoneNode`.
 - **Sustitución de color por nodo**: aplica cualquier color CSS a un nodo individual con el input `color`.
-- **Personalización completa con variables CSS**: ajusta colores, tamaños, espaciado y el degradado del conector mediante los tokens `--hub-milestone-*`.
+- **Animación de revelado al entrar en el viewport**: el trazo de acento «se completa» hasta el nodo activo cuando la línea de tiempo entra en pantalla — **activado por defecto**, configurable globalmente con `provideHubMilestones` o por instancia con `[reveal]`. Compatible con SSR y desactivado bajo `prefers-reduced-motion`.
+- **Pulso del nodo activo** (opcional con `[pulse]`): una onda suave sobre el nodo activo para destacar el paso actual.
+- **Compatible con RTL**: la disposición, los conectores y la animación de revelado se reflejan correctamente bajo `dir="rtl"`.
+- **Personalización completa con variables CSS**: ajusta colores, tamaños, espaciado y los tiempos de animación mediante los tokens `--hub-milestone-*`.
 - **Standalone y moderno**: componentes standalone, Angular Signals, `OnPush`, compatible con SSR.
 - **Sin dependencias en tiempo de ejecución** más allá de Angular y `tslib`.
 
@@ -146,17 +149,64 @@ export class RoadmapComponent {}
 
 Cuando un nodo no tiene ni una plantilla `hubMilestoneNode` ni un `label`, recurre a su número automático en base 1.
 
+### Pulso del nodo activo
+
+Añade `[pulse]` al contenedor para emitir una onda suave sobre el nodo `active`, destacando el paso actual. Es opcional y respeta `prefers-reduced-motion`.
+
+```html
+<hub-milestones orientation="horizontal" [pulse]="true">
+	<hub-milestone state="complete"><h4>Pedido</h4></hub-milestone>
+	<hub-milestone state="active"><h4>En tránsito</h4></hub-milestone>
+	<hub-milestone state="pending"><h4>Entregado</h4></hub-milestone>
+</hub-milestones>
+```
+
+### Animación de revelado al entrar en el viewport
+
+Cuando un `<hub-milestones>` entra en pantalla, anima el trazo de acento completándose desde el primer nodo hasta el nodo activo. **Está activada por defecto** — sin configuración. El componente solo anima en el navegador, así que con SSR / sin JS se renderiza el trazo completo, y la animación se desactiva bajo `prefers-reduced-motion`.
+
+Desactívala (o vuelve a activarla) globalmente añadiendo `provideHubMilestones` a la configuración de la aplicación:
+
+```typescript
+import { ApplicationConfig } from '@angular/core';
+import { provideHubMilestones } from 'ng-hub-ui-milestones';
+
+export const appConfig: ApplicationConfig = {
+	providers: [
+		// Desactiva el revelado para todos los <hub-milestones> de la app.
+		provideHubMilestones({ reveal: false })
+	]
+};
+```
+
+El input `[reveal]` por instancia siempre prevalece sobre el valor global:
+
+```html
+<!-- Fuerza el revelado activado, aunque esté desactivado globalmente -->
+<hub-milestones [reveal]="true"> … </hub-milestones>
+```
+
 ## 📚 Referencia de API
 
 ### `HubMilestonesComponent` — `<hub-milestones>`
 
 #### Inputs
 
-| Input         | Tipo                       | Por defecto  | Descripción                                          |
-| ------------- | -------------------------- | ------------ | ---------------------------------------------------- |
-| `orientation` | `HubMilestonesOrientation` | `'vertical'` | Dirección del diseño: `'vertical'` u `'horizontal'`. |
+| Input         | Tipo                       | Por defecto  | Descripción                                                                                                                                |
+| ------------- | -------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `orientation` | `HubMilestonesOrientation` | `'vertical'` | Dirección del diseño: `'vertical'` u `'horizontal'`.                                                                                       |
+| `pulse`       | `boolean`                  | `false`      | Emite una onda suave sobre el nodo `active` para destacar el paso actual. Respeta `prefers-reduced-motion`.                                |
+| `reveal`      | `boolean`                  | _(global)_   | Reproduce la animación de revelado al entrar en el viewport. Por defecto toma el valor de `provideHubMilestones` (activado si no se fija). |
 
 > El contenedor también numera automáticamente sus nodos `hub-milestone` proyectados según el orden del DOM; no se requiere ningún input para ello.
+
+### `provideHubMilestones(config?)`
+
+Un proveedor de entorno para valores por defecto de toda la aplicación. Añádelo al array `providers` de tu `ApplicationConfig`.
+
+| Opción   | Tipo      | Por defecto | Descripción                                                                                       |
+| -------- | --------- | ----------- | ------------------------------------------------------------------------------------------------- |
+| `reveal` | `boolean` | `true`      | Valor por defecto de la animación de revelado. Se sobrescribe por instancia con el input `[reveal]`. |
 
 ### `HubMilestoneComponent` — `<hub-milestone>`
 
@@ -187,36 +237,41 @@ Directiva estructural aplicada a un `<ng-template>` para proyectar contenido per
 | -------------------------- | ------------------------------------------------ |
 | `HubMilestonesOrientation` | `'vertical' \| 'horizontal'`                     |
 | `HubMilestoneState`        | `'complete' \| 'active' \| 'pending' \| 'error'` |
+| `HubMilestonesConfig`      | `{ reveal?: boolean }`                           |
 
 ## 🎨 Estilos
 
 La librería se personaliza por completo mediante variables CSS `--hub-milestone-*`, con valores de respaldo seguros para que funcione de forma autónoma y se re-tematice en tiempo de ejecución. Sobreescríbelas en `:root`, en un selector `hub-milestones` o por nodo mediante el input `color`.
 
-| Variable CSS                           | Por defecto                                    | Descripción                                  |
-| -------------------------------------- | ---------------------------------------------- | -------------------------------------------- |
-| `--hub-milestone-node-size`            | `2.75rem`                                      | Diámetro del círculo del nodo.               |
-| `--hub-milestone-node-font-size`       | `1.05rem`                                      | Tamaño de fuente del contenido del nodo.     |
-| `--hub-milestone-node-color`           | `var(--hub-sys-color-primary, #7c3aed)`        | Color de fondo del nodo (por defecto/activo).|
-| `--hub-milestone-node-text`            | `#ffffff`                                      | Color del texto/contenido del nodo.          |
-| `--hub-milestone-pending-bg`           | `var(--hub-sys-surface-elevated, #f1f3f5)`     | Fondo de un nodo pendiente.                  |
-| `--hub-milestone-pending-color`        | `var(--hub-sys-text-muted, #6c757d)`           | Color del texto de un nodo pendiente.        |
-| `--hub-milestone-pending-border`       | `var(--hub-sys-border-color-default, #dee2e6)` | Borde de un nodo pendiente.                  |
-| `--hub-milestone-error-bg`             | `var(--hub-sys-color-danger, #dc3545)`         | Fondo de un nodo de error.                   |
-| `--hub-milestone-connector-thickness`  | `3px`                                          | Grosor del raíl de conexión.                 |
-| `--hub-milestone-connector-bg`         | `linear-gradient(180deg, #7c3aed, #f97316)`    | Fondo del conector (segmentos completados).  |
-| `--hub-milestone-connector-pending-bg` | `var(--hub-sys-border-color-default, #dee2e6)` | Fondo del conector para segmentos pendientes.|
-| `--hub-milestone-gap`                  | `1rem`                                         | Espacio entre el nodo y su cuerpo.           |
-| `--hub-milestone-spacing`              | `1.75rem`                                      | Espaciado entre hitos consecutivos.          |
-| `--hub-milestone-body-color`           | `var(--hub-sys-text-primary, #212529)`         | Color del texto del cuerpo.                  |
-| `--hub-milestone-body-muted`           | `var(--hub-sys-text-muted, #6c757d)`           | Color atenuado del texto del cuerpo.         |
+| Variable CSS                           | Por defecto                                    | Descripción                                                          |
+| -------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------- |
+| `--hub-milestone-node-size`            | `2.75rem`                                      | Diámetro del círculo del nodo.                                       |
+| `--hub-milestone-node-font-size`       | `1.05rem`                                      | Tamaño de fuente del contenido del nodo.                            |
+| `--hub-milestone-node-color`           | `var(--hub-sys-color-primary, #0d6efd)`        | Color de fondo del nodo (completado/activo). También tiñe el trazo. |
+| `--hub-milestone-node-text`            | `var(--hub-ref-color-white, #ffffff)`          | Color del texto/contenido del nodo.                                 |
+| `--hub-milestone-pending-bg`           | `var(--hub-sys-surface-elevated, #f8f9fa)`     | Fondo de un nodo pendiente.                                         |
+| `--hub-milestone-pending-color`        | `var(--hub-sys-text-muted, #6c757d)`           | Color del texto de un nodo pendiente.                              |
+| `--hub-milestone-pending-border`       | `var(--hub-sys-border-color-default, #dee2e6)` | Borde de un nodo pendiente.                                        |
+| `--hub-milestone-error-bg`             | `var(--hub-sys-color-danger, #dc3545)`         | Fondo de un nodo de error.                                        |
+| `--hub-milestone-connector-thickness`  | `3px`                                          | Grosor del raíl de conexión.                                      |
+| `--hub-milestone-connector-bg`         | `var(--hub-milestone-node-color)`              | Fondo del conector para segmentos completados (sigue el acento).  |
+| `--hub-milestone-connector-pending-bg` | `var(--hub-sys-border-color-default, #dee2e6)` | Fondo del conector que lleva a un nodo pendiente.                 |
+| `--hub-milestone-gap`                  | `1rem`                                         | Espacio entre el nodo y su cuerpo.                                |
+| `--hub-milestone-spacing`              | `1.75rem`                                      | Espaciado entre hitos consecutivos.                               |
+| `--hub-milestone-body-color`           | `var(--hub-sys-text-primary, #212529)`         | Color del texto del cuerpo.                                       |
+| `--hub-milestone-body-muted`           | `var(--hub-sys-text-muted, #6c757d)`           | Color atenuado del texto del cuerpo.                              |
+| `--hub-milestone-pulse-color`          | `var(--hub-milestone-node-color)`              | Color de la onda de pulso del nodo activo (`[pulse]`).            |
+| `--hub-milestone-pulse-duration`       | `1.6s`                                         | Duración de un ciclo de pulso.                                    |
+| `--hub-milestone-pulse-spread`         | `0.75rem`                                      | Cuánto se expande la onda de pulso desde el nodo.                |
+| `--hub-milestone-reveal-duration`      | `0.5s`                                         | Duración del rellenado de cada conector durante el revelado.     |
+| `--hub-milestone-reveal-stagger`       | `0.14s`                                        | Retardo entre el rellenado de conectores consecutivos (cascada). |
 
 Ejemplo de personalización independiente del framework:
 
 ```scss
 hub-milestones {
 	--hub-milestone-node-size: 3rem;
-	--hub-milestone-node-color: #2563eb;
-	--hub-milestone-connector-bg: linear-gradient(180deg, #2563eb, #22c55e);
+	--hub-milestone-node-color: #2563eb; // también tiñe el trazo del conector
 	--hub-milestone-spacing: 2rem;
 }
 ```

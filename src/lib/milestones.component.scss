@@ -8,14 +8,16 @@
 :root {
 	--hub-milestone-node-size: 2.75rem;
 	--hub-milestone-node-font-size: 1.05rem;
-	--hub-milestone-node-color: var(--hub-sys-color-primary, #7c3aed);
+	--hub-milestone-node-color: var(--hub-sys-color-primary, #0d6efd);
 	--hub-milestone-node-text: var(--hub-ref-color-white, #ffffff);
 	--hub-milestone-pending-bg: var(--hub-sys-surface-elevated, #f8f9fa);
 	--hub-milestone-pending-color: var(--hub-sys-text-muted, #6c757d);
 	--hub-milestone-pending-border: var(--hub-sys-border-color-default, #dee2e6);
 	--hub-milestone-error-bg: var(--hub-sys-color-danger, #dc3545);
 	--hub-milestone-connector-thickness: 3px;
-	--hub-milestone-connector-bg: linear-gradient(180deg, #7c3aed, #f97316);
+	// Completed/active trail follows the node accent (theme-aware, and matches
+	// any per-node `color` override). Pending uses --hub-milestone-connector-pending-bg.
+	--hub-milestone-connector-bg: var(--hub-milestone-node-color);
 	--hub-milestone-connector-pending-bg: var(--hub-sys-border-color-default, #dee2e6);
 	--hub-milestone-gap: 1rem;
 	--hub-milestone-spacing: 1.75rem;
@@ -64,8 +66,12 @@
 }
 
 .hub-milestone__connector {
+	// Absolutely positioned so it spans node-edge to next-node-edge, crossing the
+	// inter-node spacing (which lives in the milestone's padding, outside the rail).
+	position: absolute;
 	background: var(--hub-milestone-connector-bg);
-	flex: 1 1 auto;
+	border-radius: var(--hub-sys-radius-pill, 50rem);
+	z-index: 0;
 }
 
 .hub-milestone__body {
@@ -89,7 +95,9 @@
 	box-shadow: 0 0 0 4px color-mix(in srgb, var(--hub-milestone-node-color) 22%, transparent);
 }
 
-.hub-milestone--pending .hub-milestone__connector {
+// Only completed steps draw the accent trail; everything from the active (current)
+// node onward is the "not yet done" part, so its connector is muted.
+.hub-milestone:not(.hub-milestone--complete) .hub-milestone__connector {
 	background: var(--hub-milestone-connector-pending-bg);
 }
 
@@ -110,9 +118,10 @@
 }
 
 .hub-milestones--vertical .hub-milestone__connector {
+	top: var(--hub-milestone-node-size);
+	bottom: 0;
+	inset-inline-start: calc(var(--hub-milestone-node-size) / 2 - var(--hub-milestone-connector-thickness) / 2);
 	width: var(--hub-milestone-connector-thickness);
-	margin-top: 0.35rem;
-	border-radius: var(--hub-sys-radius-pill, 50rem);
 }
 
 .hub-milestones--vertical .hub-milestone:last-child .hub-milestone__connector {
@@ -129,12 +138,12 @@
 	flex: 1 1 0;
 	flex-direction: column;
 	gap: var(--hub-milestone-gap);
-	padding-right: var(--hub-milestone-spacing);
+	padding-inline-end: var(--hub-milestone-spacing);
 	min-width: 0;
 }
 
 .hub-milestones--horizontal .hub-milestone:last-child {
-	padding-right: 0;
+	padding-inline-end: 0;
 	flex: 0 0 auto;
 }
 
@@ -144,11 +153,117 @@
 }
 
 .hub-milestones--horizontal .hub-milestone__connector {
+	top: calc(var(--hub-milestone-node-size) / 2);
+	inset-inline-start: var(--hub-milestone-node-size);
+	inset-inline-end: 0;
 	height: var(--hub-milestone-connector-thickness);
-	margin-left: 0.35rem;
-	border-radius: var(--hub-sys-radius-pill, 50rem);
+	transform: translateY(-50%);
 }
 
 .hub-milestones--horizontal .hub-milestone:last-child .hub-milestone__connector {
 	display: none;
+}
+
+// ── Active pulse (opt-in via [pulse] on the container) ─────────────────────
+// A soft expanding wave on the active node. Uses a ::after ring so it does not
+// clash with the node's own static ring. Disabled under reduced-motion.
+// Override hooks (resolved per node, so they follow a per-node `color`):
+//   --hub-milestone-pulse-color (default: the node accent), -duration, -spread.
+@keyframes hub-milestone-pulse {
+	0% {
+		box-shadow: 0 0 0 0 color-mix(in srgb, var(--hub-milestone-pulse-color, var(--hub-milestone-node-color)) 45%, transparent);
+	}
+	70% {
+		box-shadow: 0 0 0 var(--hub-milestone-pulse-spread, 0.75rem) transparent;
+	}
+	100% {
+		box-shadow: 0 0 0 0 transparent;
+	}
+}
+
+.hub-milestones--pulse .hub-milestone--active .hub-milestone__node {
+	position: relative;
+}
+
+.hub-milestones--pulse .hub-milestone--active .hub-milestone__node::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	animation: hub-milestone-pulse var(--hub-milestone-pulse-duration, 1.6s) ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.hub-milestones--pulse .hub-milestone--active .hub-milestone__node::after {
+		animation: none;
+	}
+}
+
+// ── Viewport reveal — the accent trail "completes" up to the active node ────
+// On by default (configurable via provideHubMilestones / the [reveal] input).
+// The `--reveal` class is added by the component only in the browser after render,
+// so SSR / no-JS render the full trail. Disabled under prefers-reduced-motion.
+// Stagger uses --hub-milestone-index, set on each node by the container.
+@keyframes hub-milestone-fill-v {
+	from {
+		clip-path: inset(0 0 100% 0);
+	}
+	to {
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+@keyframes hub-milestone-fill-h {
+	from {
+		clip-path: inset(0 100% 0 0);
+	}
+	to {
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+.hub-milestones--reveal.hub-milestones--vertical .hub-milestone--complete .hub-milestone__connector {
+	clip-path: inset(0 0 100% 0);
+}
+
+.hub-milestones--reveal.hub-milestones--horizontal .hub-milestone--complete .hub-milestone__connector {
+	clip-path: inset(0 100% 0 0);
+}
+
+.hub-milestones--reveal.hub-milestones--revealed.hub-milestones--vertical .hub-milestone--complete .hub-milestone__connector {
+	animation: hub-milestone-fill-v var(--hub-milestone-reveal-duration, 0.5s) ease forwards;
+	animation-delay: calc(var(--hub-milestone-index, 0) * var(--hub-milestone-reveal-stagger, 0.14s));
+}
+
+.hub-milestones--reveal.hub-milestones--revealed.hub-milestones--horizontal .hub-milestone--complete .hub-milestone__connector {
+	animation: hub-milestone-fill-h var(--hub-milestone-reveal-duration, 0.5s) ease forwards;
+	animation-delay: calc(var(--hub-milestone-index, 0) * var(--hub-milestone-reveal-stagger, 0.14s));
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.hub-milestones--reveal .hub-milestone--complete .hub-milestone__connector {
+		clip-path: none;
+		animation: none;
+	}
+}
+
+// RTL: the horizontal reveal fills from the inline-start (right) edge instead.
+// (Layout + the vertical reveal already flip via logical properties; only the
+// horizontal clip-path needs a direction-aware variant.)
+@keyframes hub-milestone-fill-h-rtl {
+	from {
+		clip-path: inset(0 0 0 100%);
+	}
+	to {
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+[dir='rtl'] .hub-milestones--reveal.hub-milestones--horizontal .hub-milestone--complete .hub-milestone__connector {
+	clip-path: inset(0 0 0 100%);
+}
+
+[dir='rtl'] .hub-milestones--reveal.hub-milestones--revealed.hub-milestones--horizontal .hub-milestone--complete .hub-milestone__connector {
+	animation-name: hub-milestone-fill-h-rtl;
 }

@@ -70,7 +70,10 @@ Components are standalone, signal-based, use `OnPush` change detection, and are 
 - **Visual states**: `complete`, `active`, `pending`, and `error` states drive node and connector colors.
 - **Custom node content**: project numbers, icons, or avatars into the circle via `hubMilestoneNode`.
 - **Per-node color override**: set any CSS color on an individual node with the `color` input.
-- **Full CSS-variable theming**: customize colors, sizes, spacing, and the connector gradient through `--hub-milestone-*` tokens.
+- **Viewport reveal animation**: the accent trail "completes" up to the active node when the timeline scrolls into view — **on by default**, configurable globally with `provideHubMilestones` or per instance with `[reveal]`. SSR-safe and disabled under `prefers-reduced-motion`.
+- **Active-node pulse** (opt-in `[pulse]`): a soft wave on the active node to highlight the current step.
+- **RTL ready**: layout, connectors and the reveal animation flip correctly under `dir="rtl"`.
+- **Full CSS-variable theming**: customize colors, sizes, spacing, and animation timings through `--hub-milestone-*` tokens.
 - **Standalone & modern**: standalone components, Angular Signals, `OnPush`, SSR-safe.
 - **Zero runtime dependencies** beyond Angular and `tslib`.
 
@@ -146,17 +149,64 @@ export class RoadmapComponent {}
 
 When a node has neither a `hubMilestoneNode` template nor a `label`, it falls back to its auto-generated 1-based number.
 
+### Active-node pulse
+
+Add `[pulse]` to the container to emit a soft wave on the `active` node, drawing attention to the current step. It is opt-in and respects `prefers-reduced-motion`.
+
+```html
+<hub-milestones orientation="horizontal" [pulse]="true">
+	<hub-milestone state="complete"><h4>Ordered</h4></hub-milestone>
+	<hub-milestone state="active"><h4>In transit</h4></hub-milestone>
+	<hub-milestone state="pending"><h4>Delivered</h4></hub-milestone>
+</hub-milestones>
+```
+
+### Viewport reveal animation
+
+When a `<hub-milestones>` scrolls into view, it animates the accent trail filling from the first node up to the active node. **It is on by default** — no setup required. The component only animates in the browser, so SSR / no-JS renders the full trail, and the animation is disabled under `prefers-reduced-motion`.
+
+Turn it off (or back on) globally by adding `provideHubMilestones` to your application config:
+
+```typescript
+import { ApplicationConfig } from '@angular/core';
+import { provideHubMilestones } from 'ng-hub-ui-milestones';
+
+export const appConfig: ApplicationConfig = {
+	providers: [
+		// Disable the reveal animation for every <hub-milestones> in the app.
+		provideHubMilestones({ reveal: false })
+	]
+};
+```
+
+The per-instance `[reveal]` input always wins over the global default:
+
+```html
+<!-- Force the reveal on, even if it is disabled globally -->
+<hub-milestones [reveal]="true"> … </hub-milestones>
+```
+
 ## 📚 API Reference
 
 ### `HubMilestonesComponent` — `<hub-milestones>`
 
 #### Inputs
 
-| Input         | Type                       | Default      | Description                                       |
-| ------------- | -------------------------- | ------------ | ------------------------------------------------- |
-| `orientation` | `HubMilestonesOrientation` | `'vertical'` | Layout direction: `'vertical'` or `'horizontal'`. |
+| Input         | Type                       | Default      | Description                                                                                                                            |
+| ------------- | -------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `orientation` | `HubMilestonesOrientation` | `'vertical'` | Layout direction: `'vertical'` or `'horizontal'`.                                                                                     |
+| `pulse`       | `boolean`                  | `false`      | Emits a soft wave on the `active` node to highlight the current step. Respects `prefers-reduced-motion`.                              |
+| `reveal`      | `boolean`                  | _(global)_   | Plays the viewport reveal animation when the timeline scrolls into view. Defaults to the `provideHubMilestones` value (on if unset). |
 
 > The container also auto-numbers its projected `hub-milestone` nodes in DOM order; no input is required for this.
+
+### `provideHubMilestones(config?)`
+
+An environment provider for application-wide defaults. Add it to your `ApplicationConfig` `providers` array.
+
+| Option   | Type      | Default | Description                                                                              |
+| -------- | --------- | ------- | ---------------------------------------------------------------------------------------- |
+| `reveal` | `boolean` | `true`  | Default for the viewport reveal animation. Overridden per instance by the `[reveal]` input. |
 
 ### `HubMilestoneComponent` — `<hub-milestone>`
 
@@ -187,36 +237,41 @@ A structural directive applied to an `<ng-template>` to project custom content *
 | -------------------------- | ------------------------------------------------ |
 | `HubMilestonesOrientation` | `'vertical' \| 'horizontal'`                     |
 | `HubMilestoneState`        | `'complete' \| 'active' \| 'pending' \| 'error'` |
+| `HubMilestonesConfig`      | `{ reveal?: boolean }`                           |
 
 ## 🎨 Styling
 
 The library is themed entirely through `--hub-milestone-*` CSS variables, with safe fallbacks so it works standalone and re-themes at runtime. Override them on `:root`, on a `hub-milestones` selector, or per node via the `color` input.
 
-| CSS Variable                           | Default                                        | Description                                |
-| -------------------------------------- | ---------------------------------------------- | ------------------------------------------ |
-| `--hub-milestone-node-size`            | `2.75rem`                                      | Diameter of the node circle.               |
-| `--hub-milestone-node-font-size`       | `1.05rem`                                      | Font size of the node content.             |
-| `--hub-milestone-node-color`           | `var(--hub-sys-color-primary, #7c3aed)`        | Node background color (default/active).    |
-| `--hub-milestone-node-text`            | `#ffffff`                                      | Node text/content color.                   |
-| `--hub-milestone-pending-bg`           | `var(--hub-sys-surface-elevated, #f1f3f5)`     | Background of a pending node.              |
-| `--hub-milestone-pending-color`        | `var(--hub-sys-text-muted, #6c757d)`           | Text color of a pending node.              |
-| `--hub-milestone-pending-border`       | `var(--hub-sys-border-color-default, #dee2e6)` | Border of a pending node.                  |
-| `--hub-milestone-error-bg`             | `var(--hub-sys-color-danger, #dc3545)`         | Background of an error node.               |
-| `--hub-milestone-connector-thickness`  | `3px`                                          | Thickness of the connecting rail.          |
-| `--hub-milestone-connector-bg`         | `linear-gradient(180deg, #7c3aed, #f97316)`    | Connector background (completed segments). |
-| `--hub-milestone-connector-pending-bg` | `var(--hub-sys-border-color-default, #dee2e6)` | Connector background for pending segments. |
-| `--hub-milestone-gap`                  | `1rem`                                         | Gap between the node and its body.         |
-| `--hub-milestone-spacing`              | `1.75rem`                                      | Spacing between consecutive milestones.    |
-| `--hub-milestone-body-color`           | `var(--hub-sys-text-primary, #212529)`         | Body text color.                           |
-| `--hub-milestone-body-muted`           | `var(--hub-sys-text-muted, #6c757d)`           | Muted body text color.                     |
+| CSS Variable                           | Default                                        | Description                                                          |
+| -------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------- |
+| `--hub-milestone-node-size`            | `2.75rem`                                      | Diameter of the node circle.                                        |
+| `--hub-milestone-node-font-size`       | `1.05rem`                                      | Font size of the node content.                                      |
+| `--hub-milestone-node-color`           | `var(--hub-sys-color-primary, #0d6efd)`        | Node background color (complete/active). Also drives the trail.     |
+| `--hub-milestone-node-text`            | `var(--hub-ref-color-white, #ffffff)`          | Node text/content color.                                            |
+| `--hub-milestone-pending-bg`           | `var(--hub-sys-surface-elevated, #f8f9fa)`     | Background of a pending node.                                       |
+| `--hub-milestone-pending-color`        | `var(--hub-sys-text-muted, #6c757d)`           | Text color of a pending node.                                       |
+| `--hub-milestone-pending-border`       | `var(--hub-sys-border-color-default, #dee2e6)` | Border of a pending node.                                          |
+| `--hub-milestone-error-bg`             | `var(--hub-sys-color-danger, #dc3545)`         | Background of an error node.                                       |
+| `--hub-milestone-connector-thickness`  | `3px`                                          | Thickness of the connecting rail.                                  |
+| `--hub-milestone-connector-bg`         | `var(--hub-milestone-node-color)`              | Connector fill for completed segments (follows the node accent).   |
+| `--hub-milestone-connector-pending-bg` | `var(--hub-sys-border-color-default, #dee2e6)` | Connector fill for segments leading into a pending node.           |
+| `--hub-milestone-gap`                  | `1rem`                                         | Gap between the node and its body.                                 |
+| `--hub-milestone-spacing`              | `1.75rem`                                      | Spacing between consecutive milestones.                            |
+| `--hub-milestone-body-color`           | `var(--hub-sys-text-primary, #212529)`         | Body text color.                                                   |
+| `--hub-milestone-body-muted`           | `var(--hub-sys-text-muted, #6c757d)`           | Muted body text color.                                            |
+| `--hub-milestone-pulse-color`          | `var(--hub-milestone-node-color)`              | Color of the active-node pulse wave (`[pulse]`).                  |
+| `--hub-milestone-pulse-duration`       | `1.6s`                                         | Duration of one pulse cycle.                                      |
+| `--hub-milestone-pulse-spread`         | `0.75rem`                                      | How far the pulse wave expands from the node.                    |
+| `--hub-milestone-reveal-duration`      | `0.5s`                                         | Duration of each connector's fill during the viewport reveal.    |
+| `--hub-milestone-reveal-stagger`       | `0.14s`                                        | Delay between consecutive connectors filling (cascading reveal). |
 
 Framework-agnostic customization example:
 
 ```scss
 hub-milestones {
 	--hub-milestone-node-size: 3rem;
-	--hub-milestone-node-color: #2563eb;
-	--hub-milestone-connector-bg: linear-gradient(180deg, #2563eb, #22c55e);
+	--hub-milestone-node-color: #2563eb; // also tints the connector trail
 	--hub-milestone-spacing: 2rem;
 }
 ```

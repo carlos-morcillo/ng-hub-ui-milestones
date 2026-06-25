@@ -22,7 +22,8 @@ export type HubMilestoneState = 'complete' | 'active' | 'pending' | 'error';
 		'[class.hub-milestone--active]': "state() === 'active'",
 		'[class.hub-milestone--pending]': "state() === 'pending'",
 		'[class.hub-milestone--error]': "state() === 'error'",
-		'[style.--hub-milestone-node-color]': 'color() || null'
+		'[style.--hub-milestone-node-color]': 'color() || null',
+		'[style.--hub-milestone-index]': '_autoIndex()'
 	},
 	template: `
 		<div class="hub-milestone__rail" aria-hidden="true">
@@ -56,7 +57,7 @@ export class HubMilestoneComponent {
 	readonly nodeTemplate = contentChild(HubMilestoneNodeDirective);
 
 	/** Zero-based position assigned by the parent `hub-milestones`. */
-	private readonly _autoIndex = signal(0);
+	protected readonly _autoIndex = signal(0);
 
 	/** 1-based number shown when the node has neither custom template nor label. */
 	readonly displayNumber = computed(() => this._autoIndex() + 1);
