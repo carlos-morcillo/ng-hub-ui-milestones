@@ -1,0 +1,88 @@
+// ─────────────────────────────────────────────────────────────────────────
+// hub-milestones-theme — one-call token theming for `<hub-milestones>`
+// ─────────────────────────────────────────────────────────────────────────
+//
+// Override the `--hub-milestone-*` design tokens in a single include. Every parameter
+// is OPTIONAL and defaults to `null`: only the parameters you pass are emitted, so the
+// rest keep their defaults. Token-based and self-contained.
+//
+// Note: the component's tokens are singular (`--hub-milestone-*`) while the library and
+// this mixin are plural (`ng-hub-ui-milestones` / `hub-milestones-theme`).
+//
+// The `$node-*` and `$connector-*` knobs style completed steps; the `$pending-*` knobs
+// style upcoming steps; `$error-bg` the error state. Pass any colour value directly
+// (a semantic token such as `var(--hub-sys-color-brand)` or a literal `#hex`).
+//
+// @example
+//
+//   @use 'ng-hub-ui-milestones/styles' as *;
+//
+//   .onboarding {
+//       @include hub-milestones-theme($node-color: var(--hub-sys-color-primary), $connector-thickness: 3px);
+//   }
+//
+// scss-docs-start hub-milestones-theme
+@mixin hub-milestones-theme(
+	$node-color: null,           // --hub-milestone-node-color (completed node fill)
+	$node-text: null,            // --hub-milestone-node-text (completed node label)
+	$node-size: null,            // --hub-milestone-node-size
+	$node-font-size: null,       // --hub-milestone-node-font-size
+	$connector-bg: null,         // --hub-milestone-connector-bg (completed connector)
+	$connector-pending-bg: null, // --hub-milestone-connector-pending-bg
+	$connector-thickness: null,  // --hub-milestone-connector-thickness
+	$pending-bg: null,           // --hub-milestone-pending-bg (upcoming node fill)
+	$pending-border: null,       // --hub-milestone-pending-border
+	$pending-color: null,        // --hub-milestone-pending-color
+	$error-bg: null,             // --hub-milestone-error-bg
+	$body-color: null,           // --hub-milestone-body-color (step body text)
+	$body-muted: null,           // --hub-milestone-body-muted
+	$gap: null,                  // --hub-milestone-gap
+	$spacing: null               // --hub-milestone-spacing
+) {
+	@if $node-color != null {
+		--hub-milestone-node-color: #{$node-color};
+	}
+	@if $node-text != null {
+		--hub-milestone-node-text: #{$node-text};
+	}
+	@if $node-size != null {
+		--hub-milestone-node-size: #{$node-size};
+	}
+	@if $node-font-size != null {
+		--hub-milestone-node-font-size: #{$node-font-size};
+	}
+	@if $connector-bg != null {
+		--hub-milestone-connector-bg: #{$connector-bg};
+	}
+	@if $connector-pending-bg != null {
+		--hub-milestone-connector-pending-bg: #{$connector-pending-bg};
+	}
+	@if $connector-thickness != null {
+		--hub-milestone-connector-thickness: #{$connector-thickness};
+	}
+	@if $pending-bg != null {
+		--hub-milestone-pending-bg: #{$pending-bg};
+	}
+	@if $pending-border != null {
+		--hub-milestone-pending-border: #{$pending-border};
+	}
+	@if $pending-color != null {
+		--hub-milestone-pending-color: #{$pending-color};
+	}
+	@if $error-bg != null {
+		--hub-milestone-error-bg: #{$error-bg};
+	}
+	@if $body-color != null {
+		--hub-milestone-body-color: #{$body-color};
+	}
+	@if $body-muted != null {
+		--hub-milestone-body-muted: #{$body-muted};
+	}
+	@if $gap != null {
+		--hub-milestone-gap: #{$gap};
+	}
+	@if $spacing != null {
+		--hub-milestone-spacing: #{$spacing};
+	}
+}
+// scss-docs-end hub-milestones-theme

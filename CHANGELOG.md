@@ -5,6 +5,16 @@ All notable changes to `ng-hub-ui-milestones` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [22.2.0] - 2026-07-07
+
+### Added
+
+- **`hub-milestones-theme(...)` SCSS mixin** — one-call token theming for `<hub-milestones>`, covering the full `--hub-milestone-*` surface: completed steps (`$node-color`, `$node-text`, `$node-size`, `$node-font-size`, `$connector-bg`, `$connector-thickness`), upcoming steps (`$pending-bg`, `$pending-border`, `$pending-color`, `$connector-pending-bg`), the error state (`$error-bg`), the step body (`$body-color`, `$body-muted`) and layout (`$gap`, `$spacing`). Every parameter is null-defaulted and additive. (The component tokens are singular `--hub-milestone-*`; the library and mixin are plural.)
+
+### Changed
+
+- **Packaging — the library now ships its SCSS at `/styles`.** `src/lib/styles` is emitted to `dist/milestones/styles`, exposing `hub-milestones-theme` as a first-class package entry: `@use 'ng-hub-ui-milestones/styles' as *;`.
+
 ## [22.1.0] - 2026-07-07
 
 ### Changed
