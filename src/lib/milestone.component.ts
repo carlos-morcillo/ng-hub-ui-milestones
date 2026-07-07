@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, contentChild, input, signal, ViewEncapsulation } from '@angular/core';
 import { HubMilestoneNodeDirective } from './milestone-node.directive';
+import { resolveHubAccent } from './shared/resolve-hub-accent';
 
 /** Visual state of a milestone node. */
 export type HubMilestoneState = 'complete' | 'active' | 'pending' | 'error';
@@ -22,7 +23,7 @@ export type HubMilestoneState = 'complete' | 'active' | 'pending' | 'error';
 		'[class.hub-milestone--active]': "state() === 'active'",
 		'[class.hub-milestone--pending]': "state() === 'pending'",
 		'[class.hub-milestone--error]': "state() === 'error'",
-		'[style.--hub-milestone-node-color]': 'color() || null',
+		'[style.--hub-milestone-node-color]': 'accentVar()',
 		'[style.--hub-milestone-index]': '_autoIndex()'
 	},
 	template: `
@@ -47,8 +48,19 @@ export class HubMilestoneComponent {
 	/** Visual state, drives the node/connector colors. */
 	readonly state = input<HubMilestoneState>('pending');
 
-	/** Per-node color override (any CSS color). Wins over the state color. */
+	/**
+	 * Per-node color override. Accepts a semantic accent name (e.g. `primary`, or any
+	 * registered/CSS named colour) or a literal value (`#hex`, `rgb()`, `oklch()`, `var()`).
+	 * Wins over the state color.
+	 */
 	readonly color = input<string>('');
+
+	/**
+	 * Resolved accent bound to `--hub-milestone-node-color`. A bareword resolves to the ds
+	 * token `var(--hub-sys-color-<name>, <name>)` (so semantic names work, with the raw word
+	 * as fallback); a literal `#hex`/`rgb()`/`oklch()`/`var()` is passed through unchanged.
+	 */
+	protected readonly accentVar = computed(() => resolveHubAccent(this.color()));
 
 	/** Fallback content shown inside the node when no `hubMilestoneNode` template is given. */
 	readonly label = input<string>('');

@@ -65,6 +65,22 @@ describe('HubMilestonesComponent', () => {
 		expect(milestones()[1].style.getPropertyValue('--hub-milestone-node-color')).toBe('#e83e8c');
 	});
 
+	it('resolves a semantic color name to the ds token with the raw word as fallback', () => {
+		const node = TestBed.createComponent(HubMilestoneComponent);
+		node.componentRef.setInput('color', 'primary');
+		node.detectChanges();
+		expect((node.nativeElement as HTMLElement).style.getPropertyValue('--hub-milestone-node-color')).toBe(
+			'var(--hub-sys-color-primary, primary)'
+		);
+	});
+
+	it('passes a literal color value through unchanged', () => {
+		const node = TestBed.createComponent(HubMilestoneComponent);
+		node.componentRef.setInput('color', '#ff0000');
+		node.detectChanges();
+		expect((node.nativeElement as HTMLElement).style.getPropertyValue('--hub-milestone-node-color')).toBe('#ff0000');
+	});
+
 	it('reflects the orientation on the host', () => {
 		const host = fixture.nativeElement.querySelector('.hub-milestones') as HTMLElement;
 		expect(host.classList.contains('hub-milestones--vertical')).toBe(true);
