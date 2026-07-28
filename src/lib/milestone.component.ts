@@ -19,6 +19,8 @@ export type HubMilestoneState = 'complete' | 'active' | 'pending' | 'error';
 	encapsulation: ViewEncapsulation.None,
 	host: {
 		class: 'hub-milestone',
+		role: 'listitem',
+		'[attr.aria-current]': "state() === 'active' ? 'step' : null",
 		'[class.hub-milestone--complete]': "state() === 'complete'",
 		'[class.hub-milestone--active]': "state() === 'active'",
 		'[class.hub-milestone--pending]': "state() === 'pending'",
