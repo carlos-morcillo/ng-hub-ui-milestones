@@ -1,7 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, contentChild, input, signal, ViewEncapsulation } from '@angular/core';
 import { HubMilestoneNodeDirective } from './milestone-node.directive';
-import { resolveHubAccent } from './shared/resolve-hub-accent';
+import { resolveHubAccent } from 'ng-hub-ui-utils';
 
 /** Visual state of a milestone node. */
 export type HubMilestoneState = 'complete' | 'active' | 'pending' | 'error';

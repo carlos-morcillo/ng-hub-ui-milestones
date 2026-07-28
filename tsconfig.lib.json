@@ -6,7 +6,10 @@
     "outDir": "../../out-tsc/lib",
     "declaration": true,
     "declarationMap": true,
-    "types": []
+    "types": [],
+    "paths": {
+      "ng-hub-ui-utils": ["../../dist/utils"]
+    }
   },
   "include": [
     "src/**/*.ts"
