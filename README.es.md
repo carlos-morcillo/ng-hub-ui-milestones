@@ -9,11 +9,11 @@ Un componente de línea de tiempo / pasos de progreso ligero y presentacional pa
 
 ## Documentación y ejemplos en vivo
 
-Este paquete forma parte de [Hub UI](https://hubui.dev/), una colección de librerías de componentes Angular para aplicaciones standalone.
+Este paquete forma parte de [Hub UI](https://hubui.dev/en/), una colección de librerías de componentes Angular para aplicaciones standalone.
 
-- Documentación: https://hubui.dev/milestones/overview/
-- Ejemplos en vivo: https://hubui.dev/milestones/examples/
-- Hub UI: https://hubui.dev/
+- Documentación: https://hubui.dev/en/milestones/overview/
+- Ejemplos en vivo: https://hubui.dev/en/milestones/examples/
+- Hub UI: https://hubui.dev/en/
 
 ## 🧩 Familia de librerías `ng-hub-ui`
 
